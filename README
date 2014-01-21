@@ -40,7 +40,7 @@ These next to programs are based on an extensive hack of the fwdpp prototype cod
 
 2. expevol_region_breakpoints.  This program is identical in usage to expevol_region
 
-3. expevol_region_breakpoints_K.  This program adds an additional K mutations flanking the evolved region.  The total recombination rate for the region is treated as 0.5 (e.g., a textbook "whole chromosome" but the region containing SNPs whose frequencies are tracked is still whatever r is on the command line.  There is also still the single causative site in the middle of the region, as described above.
+3. expevol_region_breakpoints_K.  This program adds an additional K mutations flanking the evolved region.  The total recombination rate for the region is treated as 0.5 (e.g., a textbook "whole chromosome" but the region containing SNPs whose frequencies are tracked is still whatever r is on the command line.  There is also still the single causative site in the middle of the region, as described above.  For this model, fitness is multiplicative across the K + 1 causative sites.
 
 The command line for this program is:
 
