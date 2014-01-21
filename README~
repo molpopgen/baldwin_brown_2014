@@ -1,9 +1,0 @@
-Initial documentation by KRT on Jan 21, 2014
-
-Program written using early version of fwdpp library.  Programs NOT compatible w/recent (e.g. on github) versions of that library.
-
-Fitnesses are multiplicative across sites, and are 1, 1+sh, 1+s for the 3 genotypes.
-
-Until I write more documentation, see example_K.sh for example of how to run expevol_region_breakpoints_Ksel and example.sh for how to run expevol_region_breakpoints.  The former is the region evolved + K extra selected sites on the chromosome.  The latter is the program used for main results in paper--a region with a causative mutation in the middle.
-
-An example coalescent input file, generated using the program "macs" as described in the paper, is provided.  It is called macsfile.1.gz
