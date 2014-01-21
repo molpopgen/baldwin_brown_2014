@@ -2,10 +2,56 @@ Initial documentation by KRT on Jan 21, 2014
 
 Simulation and R code for Baldwin-Brown, Long, and Thornton (2014) MBE.  Paper currently online at http://mbe.oxfordjournals.org/content/early/2014/01/18/molbev.msu048.abstract.html.
 
-Program written using early version of fwdpp library.  Programs NOT compatible w/recent (e.g. on github) versions of that library.
+These programs were written using early version of fwdpp library (http://molpopgen.org/software/fwdpp/ and https://github.com/molpopgen/fwdpp).  These programs are NOT compatible w/recent (e.g. on github) versions of that library. 
 
-Fitnesses are multiplicative across sites, and are 1, 1+sh, 1+s for the 3 genotypes.
+There are three programs in this repository.  All were used in the paper.
 
-Until I write more documentation, see example_K.sh for example of how to run expevol_region_breakpoints_Ksel and example.sh for how to run expevol_region_breakpoints.  The former is the region evolved + K extra selected sites on the chromosome.  The latter is the program used for main results in paper--a region with a causative mutation in the middle.
+1. expevol_region.  Seeds a simulation with an "ms"-format block. ("ms"-format means a binary matrix representation of SNP data the way that Dick Hudson's coalescent simulator ms writes its output.)  This program evolves the gametes with drift, recombination, and selection (in the case of the "selected" lines only).  For the selected lines, the derived state at the SNP in the ms block closest to the middle of the region is used as the causative mutation.  This program was used for most of the results in the paper.  The command line usage for this program is:
 
-An example coalescent input file, generated using the program "macs" as described in the paper, is provided.  It is called macsfile.1.gz
+expevol_region msfile maxgams N s h r ngens1 ngens2 ngens3 nrep_selected nreps_control outfile_basename seed
+
+where:
+
+msfile = filename of ms-format input data.  Must be gzipped.  Must contain 1 ms replicate. (A file with > 1 ms replicate will always use the first.  I know this is lame, but we did what we did.)
+
+maxgams = # of founder chromosomes in msfile to use.  For example, 16 means use the first 16 haplotypes in msfile, corresponding to 8 diploids founding the experimental evolution populations
+
+N = diploid population size of each replicate population.  The maxgams founder chromosomes get blown up to 2N chromosomes which are then evolved.
+
+s = seletion coefficient @ causative site.  Fitnesses are 1, 1+hs, and 1+s.
+
+h = dominance @ causative site.  The paper used h = 1/2, a.k.a. genic selection/codominance
+
+r = recombination rate for the region.  Corresponds to # of crossovers per diploid per generation
+
+ngens1/ngens2/ngen3 = the time points at which to sample the population and write allele frequencies in every replicat to the outputfile
+
+nreps_selected = # replicates of lines to evolve w/selection
+
+nreps_control = # replicates of lines to evolve w/o selection
+
+outfile_basename = the prefix for the output file.  For example, if outputfile_basename = "foo" and ngens1-3 are 100, 500, and 1000, the outputfiles will be foo.100.gz, foo.500.gz and foo.1000.gz, repspectively.
+
+seed = random number seed (unsigned integer).
+
+The next two programs that I will describe were used during the revision process.  Conceptually they are the same as expevol_region, but they are implemented differently.
+
+These next to programs are based on an extensive hack of the fwdpp prototype code.  Based on a suggestion from Dick Hudson, the programs track breakpoints of recombination events rather than full haplotypes.  Internally, the prototype fwdpp code is modified such that these breakpoints are stored on gametes as "mutations".  This results in very complex code.  If and when we do more simulations like this, this code will be replaced with a simpler/cleaner code base based on current versions of fwdpp.
+
+2. expevol_region_breakpoints.  This program is identical in usage to expevol_region
+
+3. expevol_region_breakpoints_K.  This program adds an additional K mutations flanking the evolved region.  The total recombination rate for the region is treated as 0.5 (e.g., a textbook "whole chromosome" but the region containing SNPs whose frequencies are tracked is still whatever r is on the command line.  There is also still the single causative site in the middle of the region, as described above.
+
+The command line for this program is:
+
+expevol_region_breakpoints_K msfile maxgams N s h K r ngens1 ngens2 ngens3 nrep_selected nreps_control outfile_basename seed
+
+Where all the options are described above except for K, which is the # of additional causative sites with selection coefficient s and dominance h to sprinkle on the rest of the chromosome.  their initial frequencies in the base population are assigned from the equilibrium Wright-Fisher model assuming no LD.  (Ad-hoc commentary from K. Thornton.  Opinions are my own, etc.  Please note: this is a dumb model.  This program was written to address comments that came up during revision.  I'm not sure that anyone can seriously say that there are, say, 20 mutations with s=0.1 on a single linkage group in the founders of these sorts of experiments.  The main results in the paper demonstrate very high false positive rates for detecting regions responding to selection in the lab that such beliefs, to the extent that they are believed, are based on conflating apparently siginificant peaks with reality and population genetics theory.)
+
+An R script (calc_scores.R) is provided that takes the output files and turns them into the Bayesian t-statistics described in the paper.  (Once we get this t-statistics, we delete the original output files in practice.)
+
+Until I write more documentation, see example_K.sh for example of how to run expevol_region_breakpoints_Ksel and example.sh for how to run expevol_region_breakpoints.  The former is the region evolved + K extra selected sites on the chromosome.  
+
+An example coalescent input file, generated using the program "macs" as described in the paper, is provided.  It is called macsfile.1.gz.  We generated hundreds of these for the paper, but they can't be archived online.
+
+Note: the best use of this code is probably via array jobs on a machine with queueing software like Open Grid Engine.  The example shell scripts are my OGE scripts that I actually used for particular parameter sets.  This code generates lots of files (3 small .gz files per replicate).  There are better ways to do this (file locking and binary files), and if we do more work like this, that's how we will do it, and this code will be only be online for historical/replication purposes.
